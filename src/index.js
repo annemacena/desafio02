@@ -10,19 +10,67 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find((_user => _user.username === username));
+
+  if(user) {
+    request.user = user;
+    return next();
+  }
+  else {
+    return response.status(404).json({ error: "Usuário inválido (￢_￢)" });
+  }
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  // se for pro plan ou tiver menos de 10 to-dos cadastrados
+  if(user.pro || user.todos.length < 10) {
+    return next();
+  }
+  else {
+    return response.status(403).json({ error: "Usuário não pode criar mais de 10 to-dos (︶︹︺)" });
+  }
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find((_user => _user.username === username));
+
+  if(user) {
+    const todo = user.todos.find(todo => todo.id === id);
+    if(validate(id)) {
+      if(todo) {
+          request.user = user;
+          request.todo = todo
+          return next();
+        }
+        else 
+          return response.status(404).json({ error: "To-do não existe (¯.¯٥)" });
+    }
+    else
+      return response.status(400).json({ error: "To-do inválido (¯.¯٥)" });
+  }
+  else
+    return response.status(404).json({ error: "Usuário inválido (￢_￢)" });
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find((_user => _user.id === id));
+
+  if(user) {
+    request.user = user;
+    return next();
+  }
+  else {
+    return response.status(404).json({ error: "Usuário inválido (￢_￢)" });
+  }
 }
 
 app.post('/users', (request, response) => {
